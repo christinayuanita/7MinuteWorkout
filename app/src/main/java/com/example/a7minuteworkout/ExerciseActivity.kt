@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
 import android.widget.Toast
+import com.example.a7minuteworkout.data.Constants
+import com.example.a7minuteworkout.model.Exercise
 import kotlinx.android.synthetic.main.activity_exercise.*
 
 class ExerciseActivity : AppCompatActivity() {
@@ -16,6 +18,9 @@ class ExerciseActivity : AppCompatActivity() {
     private var exerciseTimer: CountDownTimer? = null
     private var exerciseProgress = 0
     private var exerciseTimerDuration : Long = 30
+
+    private var exerciseList: ArrayList<Exercise>? = null
+    private var currExercisePosition = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +36,8 @@ class ExerciseActivity : AppCompatActivity() {
         }
 
         setupRestView()
+
+        exerciseList = Constants.defaultExerciseList()
     }
 
     override fun onDestroy() {
@@ -46,6 +53,7 @@ class ExerciseActivity : AppCompatActivity() {
         progressBar.progress = restProgress
         restTimer = object: CountDownTimer(restTimerDuration * 1000, 1000){
             override fun onFinish() {
+                currExercisePosition++
                 setupExerciseView()
             }
 
@@ -62,7 +70,11 @@ class ExerciseActivity : AppCompatActivity() {
         progressBarExercise.progress = exerciseProgress
         exerciseTimer = object: CountDownTimer(exerciseTimerDuration * 1000, 1000){
             override fun onFinish() {
-                Toast.makeText(this@ExerciseActivity, "Here we will start the next rest screen", Toast.LENGTH_SHORT).show()
+                if(currExercisePosition < exerciseList?.size!! - 1){
+                    setupRestView()
+                }else{
+                    Toast.makeText(this@ExerciseActivity, "Completed", Toast.LENGTH_SHORT).show()
+                }
             }
 
             override fun onTick(millisUntilFinished: Long) {
@@ -75,6 +87,10 @@ class ExerciseActivity : AppCompatActivity() {
     }
 
     private fun setupRestView(){
+
+        restView.visibility = View.VISIBLE
+        exerciseView.visibility = View.GONE
+
         if(restTimer != null){
             restTimer!!.cancel()
             restProgress = 0
@@ -94,6 +110,10 @@ class ExerciseActivity : AppCompatActivity() {
         }
 
         setExerciseProgressBar()
+
+        exerciseImage.setImageResource(exerciseList!![currExercisePosition].getImage())
+        exerciseNameTxt.text = exerciseList!![currExercisePosition].getName()
+
     }
 
 }
